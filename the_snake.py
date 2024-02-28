@@ -85,7 +85,10 @@ class Snake(GameObject):
     def draw(self, surface):
         """отрисовывает змейку на экране, затирая след"""
         for position in self.positions[:-1]:
-            rect = pygame.Rect((position[0], position[1]), (GRID_SIZE, GRID_SIZE))
+            rect = pygame.Rect(
+                (position[0], position[1]),
+                (GRID_SIZE, GRID_SIZE)
+            )
             pygame.draw.rect(surface, self.body_color, rect)
             pygame.draw.rect(surface, BORDER_COLOR, rect, 1)
 
@@ -116,7 +119,10 @@ class Snake(GameObject):
             (head_y + (delta_y * GRID_SIZE)) % SCREEN_HEIGHT,
         )
         self.positions.insert(0, position)
-        self.last = self.positions.pop() if len(self.positions) > self.length else None
+        if len(self.positions) > self.length:
+            self.last = self.positions.pop()
+        else:
+            self.last = None
 
         # проверка на самостолкновение
         if len(self.positions) > 4:
@@ -135,7 +141,7 @@ class Snake(GameObject):
         return self.positions[0]
 
     def reset(self):
-        """сбрасывает змейку в начальное состояние после столкновения с собой."""
+        """сбрасывает змейку в начальное состояние"""
         self.direction = choice([RIGHT, DOWN, LEFT, UP])
         self.next_direction = None
 
@@ -160,7 +166,10 @@ class Apple(GameObject):
     # Метод draw класса Apple
     def draw(self, surface):
         """отрисовывает яблоко на игровой поверхности"""
-        rect = pygame.Rect((self.position[0], self.position[1]), (GRID_SIZE, GRID_SIZE))
+        rect = pygame.Rect(
+            (self.position[0], self.position[1]),
+            (GRID_SIZE, GRID_SIZE)
+        )
         pygame.draw.rect(surface, self.body_color, rect)
         pygame.draw.rect(surface, BORDER_COLOR, rect, 1)
 
@@ -171,7 +180,10 @@ class Apple(GameObject):
         атрибуту position новое значение. Координаты выбираются так, чтобы
         яблоко оказалось в пределах игрового поля.
         """
-        self.position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE, randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
+        self.position = (
+            randint(0, GRID_WIDTH - 1) * GRID_SIZE,
+            randint(0, GRID_HEIGHT - 1) * GRID_SIZE
+        )
 
 
 # Функция обработки действий пользователя
