@@ -30,7 +30,7 @@ APPLE_COLOR = (255, 0, 0)
 SNAKE_COLOR = (0, 255, 0)
 
 # Скорость движения змейки:
-SPEED = 20
+SPEED = 5
 
 # Настройка игрового окна:
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
@@ -79,10 +79,9 @@ class Snake(GameObject):
         self.next_direction = None
 
         self.positions = [self.position]
-        self.lenght = 1
+        self.length = 1
         self.last = None
 
-    # Метод draw класса Snake
     def draw(self, surface):
         """отрисовывает змейку на экране, затирая след"""
         for position in self.positions[:-1]:
@@ -117,13 +116,34 @@ class Snake(GameObject):
             (head_y + (delta_y * GRID_SIZE)) % SCREEN_HEIGHT,
         )
         self.positions.insert(0, position)
-        self.last = self.positions.pop() if len(self.positions) > self.lenght else None
+        self.last = self.positions.pop() if len(self.positions) > self.length else None
 
-        # Метод обновления направления после нажатия на кнопку
-        def update_direction(self):
-            if self.next_direction:
-                self.direction = self.next_direction
-                self.next_direction = None
+        # проверка на самостолкновение
+        if len(self.positions) > 4:
+            for pos in self.positions[2:]:
+                if pos == self.get_head_position():
+                    self.reset()
+
+    def update_direction(self):
+        """обновляет направление движения змейки."""
+        if self.next_direction:
+            self.direction = self.next_direction
+            self.next_direction = None
+
+    def get_head_position(self):
+        """возвращает позицию головы змейки."""
+        return self.positions[0]
+
+    def reset(self):
+        """сбрасывает змейку в начальное состояние после столкновения с собой."""
+        self.direction = choice([RIGHT, DOWN, LEFT, UP])
+        self.next_direction = None
+
+        self.positions = [self.position]
+        self.length = 1
+        self.last = None
+
+        screen.fill(BOARD_BACKGROUND_COLOR)
 
 
 class Apple(GameObject):
@@ -135,7 +155,7 @@ class Apple(GameObject):
     def __init__(self, body_color=APPLE_COLOR):
         super().__init__(body_color)
         # задать рандомную позицию
-        self.position = (2 * GRID_SIZE, 5 * GRID_SIZE)
+        self.randomize_position()
 
     # Метод draw класса Apple
     def draw(self, surface):
@@ -143,6 +163,15 @@ class Apple(GameObject):
         rect = pygame.Rect((self.position[0], self.position[1]), (GRID_SIZE, GRID_SIZE))
         pygame.draw.rect(surface, self.body_color, rect)
         pygame.draw.rect(surface, BORDER_COLOR, rect, 1)
+
+    # Рандомное расположение яблока
+    def randomize_position(self):
+        """
+        устанавливает случайное положение яблока на игровом поле — задаёт
+        атрибуту position новое значение. Координаты выбираются так, чтобы
+        яблоко оказалось в пределах игрового поля.
+        """
+        self.position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE, randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
 
 
 # Функция обработки действий пользователя
@@ -177,12 +206,15 @@ def main():
         clock.tick(SPEED)
 
         handle_keys(snake)
-        snake.update.direction()
+        snake.update_direction()
         snake.move()
 
         # пересечение с яблоком
-        # обновление змейки
-        # обновление позиции для яблока
+        if snake.get_head_position() == apple.position:
+            # обновление змейки
+            snake.positions.insert(0, apple.position)
+            # обновление позиции для яблока
+            apple.randomize_position()
 
         apple.draw(screen)
         snake.draw(screen)
